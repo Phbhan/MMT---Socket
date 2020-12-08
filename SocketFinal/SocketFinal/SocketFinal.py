@@ -10,12 +10,13 @@ def CreateServer(host, port):
 #read the request from client
 def ReadRequest(Client):
 	re = ""
-	Client.settimeout(1)
+	Client.settimeout(1) # set time out 1 second
 	try:
 		re = Client.recv(1024).decode()
 		while (re):
 			re = re + Client.recv(1024).decode()
-	except socket.timeout:
+			# use while cause we wnanna read all of the data, the data may be bigger than 1024
+	except socket.timeout: # after 1 second of no activity- time out
 		if not re:
 			print("Didn't receive data! [Timeout]")
 	finally:
@@ -32,19 +33,18 @@ def ReadHTTPRequest(Server):
 	return Client, re
 
 
-# send file index to client
 def SendFileIndex(Client): 
 	f = open ("index.html", "rb")
-	str = f.read()
+	L = f.read()
 	header ="""HTTP/1.1 200 OK
 Content-Type: text/html; charset=UTF-8
 Content-Encoding: UTF-8
 Content-Length: %d
 
-"""%len(str)
+"""%len(L)
 	print("-----------------HTTP respone  Index.html: ")
 	print(header)
-	header += str.decode()
+	header += L.decode()
 	Client.send(bytes(header, 'utf-8'))
 
 def MovePageIndex(Client):
@@ -56,21 +56,17 @@ Location: http://127.0.0.1:8080/index.html
 	print(header)
 	Client.send(bytes(header,'utf-8'))
 
-
-# homaepage when access
+#4. Send HTTP Response  + 5. Close Server
 def MoveHomePage(Server, Client, Request):
 	if "GET /index.html HTTP/1.1" in Request: 
 		SendFileIndex(Client)
 		Server.close()
 		return True
-
 	if "GET / HTTP/1.1" in Request:
-
 		#Move Index.html 
 		MovePageIndex(Client)
 		Server.close()
-
-		#return index.html to client
+		#Tra ve file index.html cho client
 		Server = CreateServer("localhost", 8080)
 		Client, Request = ReadHTTPRequest(Server)
 		print("------------------HTTP request: ")
@@ -82,24 +78,15 @@ def MoveHomePage(Server, Client, Request):
 if __name__ == "__main__":
 	while True:
 		print("Part 1: return homepage when access")
+		# Create Server Socket 
 		Server = CreateServer("localhost",8080)
+		# Client connect Server + 3. Read HTTP Request
 		Client, Request = ReadHTTPRequest(Server)
 		print("----------------HTTP requset: " )
 		print(Request)
+		# Send HTTP Rea + Close Sever
 		MoveHomePage(Server, Client, Request)
-
-		print("Part 2: login - post username and password to server")
-		Server = CreateServer("localhost",8080)
-		Client, Request = ReadHTTPRequest(Server)
-		print("----------------HTTP requset: " )
-		print(Request)
-
-		if CheckPass(Request) == True: 
-			MoveInfo(Server, Client)
-			SendInfo(Server, Client)
-		else: 
-			Move404(Server, Client)
-			Send404(Server, Client)
 		
 	
+	#note: chua chay duoc ham doc file index.html
 

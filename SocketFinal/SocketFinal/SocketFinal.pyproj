@@ -23,14 +23,6 @@
   <ItemGroup>
     <Compile Include="SocketFinal.py" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="404.html" />
-    <Content Include="image1.jpg" />
-    <Content Include="image2.jpg" />
-    <Content Include="index.html" />
-    <Content Include="info.html" />
-    <Content Include="Style.css" />
-  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
        Visual Studio and specify your pre- and post-build commands in
