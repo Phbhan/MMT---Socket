@@ -160,7 +160,7 @@ Content-Length: %d
 def SendImg(Client, NameImg):
     f = open(NameImg, "rb")
     L = f.read()
-    header = f"HTTP/1.1 200 OK\nContent-Type: image/jpeg\nContent-Length: {len(L)}\r\n\r\n" 
+    header = f"HTTP/1.1 200 OK\nContent-Type: image/jpeg\nContent-Length: {len(L)}\r\n\r\n"
     print("-----------------HTTP respone: ")
     print(header)
     header = header.encode() + L + "\r\n\r\n".encode()
@@ -199,6 +199,7 @@ def MoveInfoPage(Server, Client, Request):
         SendImg(Client, "pic2.jpg")
     Server.close()
 
+
 def checkLogin(Request):
     if "Username=admin&Password=admin" in Request:
         print("Right account, move to info.html")
@@ -206,11 +207,9 @@ def checkLogin(Request):
     else:
         return False
 
-  
-
 
 # file.html
-    
+
 def MoveFile(Server, Client):
     header = """HTTP/1.1 301 Moved Permanently
 Location: http://127.0.0.1:8080/file.html
@@ -220,7 +219,7 @@ Location: http://127.0.0.1:8080/file.html
     print(header)
     Client.send(bytes(header, "utf-8"))
 
-    
+
 def SendFileDownload(Client, NameDownload):
     f = open(NameDownload, "rb")
     L = f.read()
@@ -242,6 +241,7 @@ Live\r\n
     header = header.encode() + L + "\r\n\r\n".encode()
     Client.sendall(header)
 
+
 def SendFileFile(Client):
     f = open("file.html", "rb")
     L = f.read()
@@ -255,6 +255,7 @@ Content-Length: %d
     print(header)
     header += L.decode()
     Client.send(bytes(header, 'utf-8'))
+
 
 def MoveFilePage(Server, Client, Request):
     MoveFile(Server, Client)
