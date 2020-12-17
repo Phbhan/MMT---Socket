@@ -25,6 +25,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="404.html" />
+    <Content Include="Doc1.docx" />
+    <Content Include="Doc2.docx" />
+    <Content Include="file.html" />
     <Content Include="index.html" />
     <Content Include="info.html" />
     <Content Include="pic1.jpg" />

@@ -205,7 +205,7 @@ def checkLogin(Request):
         print("Right account, move to info.html")
         return True
     else:
-        return False
+        return False 
 
 
 # file.html
@@ -219,28 +219,16 @@ Location: http://127.0.0.1:8080/file.html
     print(header)
     Client.send(bytes(header, "utf-8"))
 
-
 def SendFileDownload(Client, NameDownload):
     f = open(NameDownload, "rb")
     L = f.read()
-    header = """HTTP/1.1 200 OK 
-Content-Type: text/plain
-Transfer-Encoding: chunked
-5\r\n
-Media\r\n
-8\r\n
-Services\r\n
-4\r\n
-Live\r\n
-0\r\n
-\r\n
+    header = "HTTP/1.1 200 OK\nContent-Type: text/plain\nTransfer-Encoding: chunked\r\n\r\n"
+    header += "A\r\n\r\nA\r\L\r\nA\r\nL\r\n0\r\n\r\n"
 
-""" % len(L)
     print("-----------------HTTP respone  File.html: ")
     print(header)
-    header = header.encode() + L + "\r\n\r\n".encode()
+    header = header.encode() 
     Client.sendall(header)
-
 
 def SendFileFile(Client):
     f = open("file.html", "rb")
@@ -258,26 +246,22 @@ Content-Length: %d
 
 
 def MoveFilePage(Server, Client, Request):
-    MoveFile(Server, Client)
-    Server.close()
-    # 1. Create Server Socket
-    Server = CreateServer("localhost", 8080)
-    # 2. Client connect Server + 3. Read HTTP Request
-    Client, Request = ReadHTTPRequest(Server)
-    print("----------------HTTP requset: ")
-    print(Request)
-    SendFileFile(Client)
-    Server.close()
-    # image 1
-    Server = CreateServer("localhost", 8080)
-    Client, Request = ReadHTTPRequest(Server)
-    print("HTTP Request: ")
-    print(Request)
-    if "GET /pic1.jpg HTTP/1.1" in Request:
-        SendImg(Client, "pic1.jpg")
-    if "GET /pic2.jpg HTTP/1.1" in Request:
-        SendImg(Client, "pic2.jpg")
-    Server.close()
+    if "GET /file.html HTTP/1.1" in Request:
+        SendFileFile(Client)
+        Server.close()
+        Server = CreateServer("localhost", 8080)
+        Client, Request = ReadHTTPRequest(Server)
+        print("HTTP Request: ")
+        print(Request)
+        while True: 
+            if "GET /Doc1.docx HTTP/1.1" in Request:
+                SendFileDownload(Client, "Doc1.docx")
+            if "GET /Doc2.docx HTTP/1.1" in Request:
+                SendFileDownload(Client, "Doc2.docx")
+        Server.close()
+        return True
+    else : 
+        return False
 
 
 # Main function
@@ -290,6 +274,8 @@ if __name__ == "__main__":
         Client, Request = ReadHTTPRequest(Server)
         print("----------------HTTP requset: ")
         print(Request)
+        if MoveFilePage(Server, Client, Request) != True :
+            Move404Page(Server, Client, Request)
         # 4. Send HTTP Rea + 5. Close Sever
         if MoveHomePage(Server, Client, Request) == True:
             print("Part 2: login")
@@ -304,6 +290,8 @@ if __name__ == "__main__":
                 MoveInfoPage(Server, Client, Request)
             else:
                 Move404Page(Server, Client, Request)
-        else:
-            MoveFilePage(Server, Client, Request)
-            Server.close()
+           
+
+
+
+
