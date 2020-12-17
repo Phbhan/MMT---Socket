@@ -275,21 +275,20 @@ if __name__ == "__main__":
         print("----------------HTTP requset: ")
         print(Request)
         if MoveFilePage(Server, Client, Request) != True :
-            Move404Page(Server, Client, Request)
-        # 4. Send HTTP Rea + 5. Close Sever
-        if MoveHomePage(Server, Client, Request) == True:
-            print("Part 2: login")
-            # 1. Create Server Socket
-            Server = CreateServer("localhost", 8080)
-            # 2. Client connect Server + 3. Read HTTP Request
-            Client, Request = ReadHTTPRequest(Server)
-            print("----------------HTTP requset: ")
-            print(Request)
             # 4. Send HTTP Rea + 5. Close Sever
-            if checkLogin(Request) == True:
-                MoveInfoPage(Server, Client, Request)
-            else:
-                Move404Page(Server, Client, Request)
+            if MoveHomePage(Server, Client, Request) == True:
+                print("Part 2: login")
+                # 1. Create Server Socket
+                Server = CreateServer("localhost", 8080)
+                # 2. Client connect Server + 3. Read HTTP Request
+                Client, Request = ReadHTTPRequest(Server)
+                print("----------------HTTP requset: ")
+                print(Request)
+                # 4. Send HTTP Rea + 5. Close Sever
+                if checkLogin(Request) == True:
+                    MoveInfoPage(Server, Client, Request)
+                else:
+                    Move404Page(Server, Client, Request)
            
 
 
