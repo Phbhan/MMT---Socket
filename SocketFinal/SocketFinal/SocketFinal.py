@@ -219,15 +219,38 @@ Location: http://127.0.0.1:8080/file.html
     print(header)
     Client.send(bytes(header, "utf-8"))
 
+def chunkfile(content, message):
+    SIZE= 16
+
+    index = 0
+    message = "".encode()
+    while len(content) - index >=SIZE :
+        message += ("A\r\n".format(SIZE)).encode()
+        message += content[index: (index + SIZE)]
+        message += "\r\n".encode()
+        index += SIZE
+
+    if index< len(content):
+        lastind = len(content) - index
+        message += ("{:x}\r\n".format(lastind)).encode()
+        message += content[index: (index )]
+
+    message += "\r\n0".encode()
+
+
+
 def SendFileDownload(Client, NameDownload):
     f = open(NameDownload, "rb")
     L = f.read()
     header = "HTTP/1.1 200 OK\nContent-Type: text/plain\nTransfer-Encoding: chunked\r\n\r\n"
-    header += "A\r\n\r\nA\r\L\r\nA\r\nL\r\n0\r\n\r\n"
+    header = bytes(header, 'utf-8')
+    message = "".encode()
+    chunkfile(L,message)
+
+    header += message
 
     print("-----------------HTTP respone  File.html: ")
     print(header)
-    header = header.encode() 
     Client.sendall(header)
 
 def SendFileFile(Client):
