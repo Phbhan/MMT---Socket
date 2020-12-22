@@ -219,39 +219,34 @@ Location: http://127.0.0.1:8080/file.html
     print(header)
     Client.send(bytes(header, "utf-8"))
 
-def chunkfile(content, message):
-    SIZE= 16
-
-    index = 0
-    message = "".encode()
-    while len(content) - index >=SIZE :
-        message += ("A\r\n".format(SIZE)).encode()
-        message += content[index: (index + SIZE)]
-        message += "\r\n".encode()
-        index += SIZE
-
-    if index< len(content):
-        lastind = len(content) - index
-        message += ("{:x}\r\n".format(lastind)).encode()
-        message += content[index: (index )]
-
-    message += "\r\n0".encode()
-
-
 
 def SendFileDownload(Client, NameDownload):
     f = open(NameDownload, "rb")
     L = f.read()
-    header = "HTTP/1.1 200 OK\nContent-Type: text/plain\nTransfer-Encoding: chunked\r\n\r\n"
-    header = bytes(header, 'utf-8')
-    message = "".encode()
-    chunkfile(L,message)
+    header = "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n"
+    header1 = bytes(header, 'utf-8')
+    message = bytes("",'utf-8')
+    content = L
+    SIZE= 10
+    index = 0
+    while len(content) - index >=SIZE :
+        message += bytes("A\r\n",'utf-8')
+        message += content[index: (index + SIZE)]
+        message += bytes("\r\n",'utf-8')
+        index += SIZE
 
-    header += message
+    if index< len(content):
+        lastind = len(content) - index
+        message += bytes(("{:x}\r\n".format(lastind)),'utf-8')
+        message += content[index: (len(content))]
+        message += bytes("\r\n",'utf-8')
+
+    message += bytes("0\r\n\r\n",'utf-8')
+    header1 += message
 
     print("-----------------HTTP respone  File.html: ")
     print(header)
-    Client.sendall(header)
+    Client.send(header1)
 
 def SendFileFile(Client):
     f = open("file.html", "rb")
@@ -273,10 +268,12 @@ def MoveFilePage(Server, Client, Request):
         SendFileFile(Client)
         Server.close()
         Server = CreateServer("localhost", 8080)
-        Client, Request = ReadHTTPRequest(Server)
-        print("HTTP Request: ")
-        print(Request)
+      
         while True: 
+            print("Part 4: download file")
+            Client, Request = ReadHTTPRequest(Server)
+            print("HTTP Request: ")
+            print(Request)
             if "GET /Doc1.docx HTTP/1.1" in Request:
                 SendFileDownload(Client, "Doc1.docx")
             if "GET /Doc2.docx HTTP/1.1" in Request:
@@ -290,25 +287,20 @@ def MoveFilePage(Server, Client, Request):
 # Main function
 if __name__ == "__main__":
     while True:
-        print("Part 1: return homepage when access")
-        # 1. Create Server Socket
         Server = CreateServer("localhost", 8080)
-        # 2. Client connect Server + 3. Read HTTP Request
         Client, Request = ReadHTTPRequest(Server)
         print("----------------HTTP requset: ")
         print(Request)
         if MoveFilePage(Server, Client, Request) != True :
-            # 4. Send HTTP Rea + 5. Close Sever
-            if MoveHomePage(Server, Client, Request) == True:
+              print("Part 1: return homepage when access")
+              if MoveHomePage(Server, Client, Request) == True:
                 print("Part 2: login")
-                # 1. Create Server Socket
                 Server = CreateServer("localhost", 8080)
-                # 2. Client connect Server + 3. Read HTTP Request
                 Client, Request = ReadHTTPRequest(Server)
                 print("----------------HTTP requset: ")
                 print(Request)
-                # 4. Send HTTP Rea + 5. Close Sever
                 if checkLogin(Request) == True:
+                    print("Part 3: information")
                     MoveInfoPage(Server, Client, Request)
                 else:
                     Move404Page(Server, Client, Request)
