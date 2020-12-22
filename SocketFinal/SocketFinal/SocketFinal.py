@@ -278,20 +278,26 @@ def MoveFilePage(Server, Client, Request):
                 SendFileDownload(Client, "Doc1.docx")
             if "GET /Doc2.docx HTTP/1.1" in Request:
                 SendFileDownload(Client, "Doc2.docx")
+
+        Client.close()
         Server.close()
         return True
     else : 
+        Server.close()
         return False
 
 
 # Main function
+ # Main function
 if __name__ == "__main__":
     while True:
+        print("Listen for client request")
         Server = CreateServer("localhost", 8080)
         Client, Request = ReadHTTPRequest(Server)
         print("----------------HTTP requset: ")
         print(Request)
         if MoveFilePage(Server, Client, Request) != True :
+            if MoveHomePage(Server, Client, Request) == True:
               print("Part 1: return homepage when access")
               if MoveHomePage(Server, Client, Request) == True:
                 print("Part 2: login")
@@ -304,8 +310,6 @@ if __name__ == "__main__":
                     MoveInfoPage(Server, Client, Request)
                 else:
                     Move404Page(Server, Client, Request)
-           
-
 
 
 
