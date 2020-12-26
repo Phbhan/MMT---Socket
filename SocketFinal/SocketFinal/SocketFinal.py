@@ -279,7 +279,7 @@ def MoveFilePage(Server, Client, Request):
             if "GET /Doc2.docx HTTP/1.1" in Request:
                 SendFileDownload(Client, "Doc2.docx")
 
-        Client.close()
+        #Client.close()
         Server.close()
         return True
     else : 
