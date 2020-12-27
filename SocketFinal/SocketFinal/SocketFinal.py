@@ -1,10 +1,13 @@
 import socket
 import os
+HOST,PORT = '127.0.0.1',8080
+
 # 1. Create a server
 
 
 def CreateServer(host, port):
     Server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    Server.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
     Server.bind((host, port))
     Server.listen(1)
     return Server
@@ -70,12 +73,12 @@ Location: http://127.0.0.1:8080/index.html
 
 
 def MoveHomePage(Server, Client, Request):
-    if "GET /index.html HTTP/1.1" in Request:
+    if (Request=='index.html'):
         SendFileIndex(Client)
         Server.close()
         return True
     else:
-        if "GET / HTTP/1.1" in Request:
+        if (Request==''):
             # Move Index.html
             MovePageIndex(Client)
             Server.close()
@@ -84,11 +87,11 @@ def MoveHomePage(Server, Client, Request):
             Client, Request = ReadHTTPRequest(Server)
             print("------------------HTTP request: ")
             print(Request)
+            Request='index.html'
             MoveHomePage(Server, Client, Request)
             return True
         else:
-            return False
-
+            return False  
 
 def Move404(Server, Client):
     header = """HTTP/1.1 301 Moved Permanently
@@ -117,15 +120,14 @@ Content-Length: %d
 # II/ 4. Send HTTP Response  + 5. Close Server
 
 
-def Move404Page(Server, Client, Request):
+def Move404Page(Server, Client):
     Move404(Server, Client)
     Server.close()
     # 1. Create Server Socket
     Server = CreateServer("localhost", 8080)
     # 2. Client connect Server + 3. Read HTTP Request
     Client, Request = ReadHTTPRequest(Server)
-    print("----------------HTTP requset: ")
-    print(Request)
+    print("----------------HTTP requset: 404")
     SendFile404(Client)
     Server.close()
 
@@ -263,53 +265,65 @@ Content-Length: %d
     Client.send(bytes(header, 'utf-8'))
 
 
-def MoveFilePage(Server, Client, Request):
-    if "GET /file.html HTTP/1.1" in Request:
-        SendFileFile(Client)
-        Server.close()
-        Server = CreateServer("localhost", 8080)
-      
-        while True: 
-            print("Part 4: download file")
-            Client, Request = ReadHTTPRequest(Server)
-            print("HTTP Request: ")
-            print(Request)
-            if "GET /Doc1.docx HTTP/1.1" in Request:
-                SendFileDownload(Client, "Doc1.docx")
-            if "GET /Doc2.docx HTTP/1.1" in Request:
-                SendFileDownload(Client, "Doc2.docx")
-
-        #Client.close()
-        Server.close()
-        return True
-    else : 
-        Server.close()
-        return False
-
-
 # Main function
- # Main function
 if __name__ == "__main__":
-    while True:
-        print("Listen for client request")
-        Server = CreateServer("localhost", 8080)
-        Client, Request = ReadHTTPRequest(Server)
-        print("----------------HTTP requset: ")
-        print(Request)
-        if MoveFilePage(Server, Client, Request) != True :
-            if MoveHomePage(Server, Client, Request) == True:
-              print("Part 1: return homepage when access")
-              if MoveHomePage(Server, Client, Request) == True:
-                print("Part 2: login")
-                Server = CreateServer("localhost", 8080)
-                Client, Request = ReadHTTPRequest(Server)
-                print("----------------HTTP requset: ")
-                print(Request)
-                if checkLogin(Request) == True:
-                    print("Part 3: information")
-                    MoveInfoPage(Server, Client, Request)
-                else:
-                    Move404Page(Server, Client, Request)
+        
+        while True:
+            print("Listen for client request")
+            my_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            my_socket.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+            my_socket.bind((HOST,PORT))
+            my_socket.listen(1)
+            connection,address = my_socket.accept()
+            request = connection.recv(1024).decode('utf-8')
+            string_list = request.split(' ')     # Split request from spaces
+ 
+            method = string_list[0]
+            requesting_file = string_list[1]
+ 
+            print('Client request ',requesting_file)
+            Request=''
+            myfile = requesting_file.split('?')[0] # After the "?" symbol not relevent here
+            myfile = myfile.lstrip('/')
+            if(myfile == ''):
+                myfile = 'index.html'    # Load index file as default
+            if (myfile=='index.html'):
+                        MoveHomePage(my_socket, connection, Request)
+                        print("Part 2: login")
+                        my_socket = CreateServer("localhost", 8080)
+                        connection, Request = ReadHTTPRequest(my_socket)
+                        print("----------------HTTP requset: ")
+                        print(Request)
+                        if checkLogin(Request) == True:
+                            print("Part 3: information")
+                            MoveInfoPage(my_socket, connection, Request)
+                        else:
+                            Move404Page(my_socket, connection)
+                     
 
+            else:
+                try:
+                    file = open(myfile,'rb') # open file , r => read , b => byte format
+                    response = file.read()
+                    file.close()
+ 
+                    header = 'HTTP/1.1 200 OK\n'
+ 
+                    if(myfile.endswith(".jpg")):
+                        mimetype = 'image/jpg'
+                    elif(myfile.endswith(".css")):
+                        mimetype = 'text/css'
+                    else:
+                        mimetype = 'text/html'
+ 
+                    header += 'Content-Type: '+str(mimetype)+'\n\n'
+ 
+                except Exception as e:
+                    header = 'HTTP/1.1 404 Not Found\n\n'
+                    Move404Page(my_socket, connection)
 
-
+                final_response = header.encode('utf-8')
+                final_response += response
+                connection.send(final_response)
+                connection.close()
+            
