@@ -322,6 +322,7 @@ if __name__ == "__main__":
                     header = 'HTTP/1.1 404 Not Found\n\n'
                     Move404Page(my_socket, connection)
 
+
                 final_response = header.encode('utf-8')
                 final_response += response
                 connection.send(final_response)
